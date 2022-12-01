@@ -72,20 +72,22 @@ def decipher(cipher_text):
 
 
 if __name__ == '__main__':
-    #file = open('plaintext512.txt', 'r')
+    #please uncomment wich file do you want to cipher
+    file = open('plaintext512.txt', 'r')
     file = open('plaintext256.txt', 'r')
     data = file.readlines()
+    print('Master key: ', data[0])
+    print('Plaintext: ', data[1])
     master_key = [int(k, 16) for k in data[0].split()]
     plaintext = [int(p, 16) for p in data[1].split()]
     file.close()
-    if master_key[0].bit_length() < 32:
+    if master_key[0].bit_length() <= 32:
         s, t, r, TMV = 32, 10, [16, 12, 8, 7], [0x000F000F]*4
     else:
         s, t, r, TMV = 64, 14, [32, 24, 16, 15], [0x000F000F000F000F]*4
     ROUND_KEYS = gen_round_keys(master_key, gen_key_sigma(master_key), TMV)
     ciphertext = cipher(plaintext)
-    print('Ciphertext:\n')
-    print([hex(c).upper() for c in ciphertext])
+    print('\nCiphertext: ', ' '.join([hex(c).upper() for c in ciphertext]))
 
 
 
