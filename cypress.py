@@ -52,24 +52,17 @@ def gen_round_keys(key, sigma, tmv):
             key = key[1:] + key[:1]
     return round_keys
 
-
-def cipher(plain_text):
+#enter task = 1 if you want to decipher cipher message 
+def cipher(plain_text, round_keys, task = 0):
     L, R = plain_text[:4], plain_text[4:]
+    if task == 1:
+        R, L = L, R
+        round_keys = round_keys[::-1]
     for j in range(t):
-        L_next = h(h([L[i] ^ ROUND_KEYS[j][i] for i in range(4)]))
+        L_next = h(h([L[i] ^ round_keys[j][i] for i in range(4)]))
         L_next = [R[i] ^ L_next[i] for i in range(4)]
         R, L = L, L_next
-    return L + R
-
-
-def decipher(cipher_text):
-    R, L = cipher_text[:4],  cipher_text[4:]
-    for j in reversed(range(t)):
-        L_next = h(h([L[i] ^ ROUND_KEYS[j][i] for i in range(4)]))
-        L_next = [R[i] ^ L_next[i] for i in range(4)]
-        R, L = L,  L_next
-    return  R + L
-
+    return L + R if task == 0 else R + L
 
 if __name__ == '__main__':
     #please uncomment wich file do you want to cipher
@@ -86,8 +79,10 @@ if __name__ == '__main__':
     else:
         s, t, r, TMV = 64, 14, [32, 24, 16, 15], [0x000F000F000F000F]*4
     ROUND_KEYS = gen_round_keys(master_key, gen_key_sigma(master_key), TMV)
-    ciphertext = cipher(plaintext)
+    ciphertext = cipher(plaintext, ROUND_KEYS)
     print('\nCiphertext: ', ' '.join([hex(c).upper() for c in ciphertext]))
+    deciphertext = cipher(ciphertext, ROUND_KEYS, 1)
+    print('\nReproduced plaintext: ', ' '.join([hex(d).upper() for d in deciphertext]))
 
 
 
