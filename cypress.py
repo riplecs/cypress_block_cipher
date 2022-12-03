@@ -9,44 +9,28 @@ Created on Fri Nov 11 14:10:38 2022
 def ROLT(x, r):
     return ((x << r)%(1 << s)|(x >> (s - r)))
 
-
 def h(p):
-    p[0] = (p[0] + p[1])%(1 << s)
-    p[3] ^= p[0]
-    p[3]= ROLT(p[3], r[0])
-    p[2] = (p[2] + p[3])%(1 << s)
-    p[1] ^= p[2]
-    p[1] = ROLT(p[1], r[1])
-    p[0] = (p[0] + p[1])%(1 << s)
-    p[3] ^= p[0]
-    p[3] = ROLT(p[3], r[2])
-    p[2] = (p[2] + p[3])%(1 << s)
-    p[1] ^= p[2]
-    p[1] = ROLT(p[1], r[3])
+    for i in range(0, 4, 2):
+        p[0] = (p[0] + p[1])%(1 << s)
+        p[3]= ROLT(p[3]^p[0], r[i])
+        p[2] = (p[2] + p[3])%(1 << s)
+        p[1] = ROLT(p[1]^p[2], r[i + 1])
     return p
-
 
 def gen_key_sigma(key, st = [0, 0, 0, 1]):
     key_l, key_r = key[:4], key[4:]
-    st = [(st[i] + key_l[i])%(1 << s) for i in range(4)]
-    st = h(h(st))
-    st = [st[i] ^ key_r[i] for i in range(4)]
-    st = h(h(st))
-    st = [(st[i] + key_l[i])%(1 << s) for i in range(4)]
-    return h(h(st))
-
+    st = h(h([(st[i] + key_l[i])%(1 << s) for i in range(4)]))
+    st = h(h([st[i] ^ key_r[i] for i in range(4)]))
+    return h(h([(st[i] + key_l[i])%(1 << s) for i in range(4)]))
 
 def gen_round_keys(key, sigma, tmv):
     round_keys = []
     for j in range(t):
         st = key[:4] if j%2 == 0 else key[4:]
         key_t = [(sigma[i] + tmv[i])%(1 << s) for i in range(4)]
-        st = [(st[i] + key_t[i])%(1 << s) for i in range(4)]
-        st = h(h(st))
-        st = [st[i] ^ key_t[i] for i in range(4)]
-        st = h(h(st))
-        st = [(st[i] + key_t[i])%(1 << s) for i in range(4)]
-        round_keys.append(st)
+        st = h(h([(st[i] + key_t[i])%(1 << s) for i in range(4)]))
+        st = h(h([st[i] ^ key_t[i] for i in range(4)]))
+        round_keys.append([(st[i] + key_t[i])%(1 << s) for i in range(4)])
         tmv = [tmv[i] << 1 for i in range(4)]
         if j%2 == 1:
             key = key[1:] + key[:1]
