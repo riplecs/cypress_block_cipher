@@ -53,8 +53,8 @@ if __name__ == '__main__':
     file = open('plaintext512.txt', 'r')
     file = open('plaintext256.txt', 'r')
     data = file.readlines()
-    print('Master key: ', data[0])
-    print('Plaintext: ', data[1])
+    print('Master key: ', data[0].upper())
+    print('Plaintext: ', data[1].upper())
     master_key = [int(k, 16) for k in data[0].split()]
     plaintext = [int(p, 16) for p in data[1].split()]
     file.close()
@@ -66,7 +66,10 @@ if __name__ == '__main__':
     ciphertext = cipher(plaintext, ROUND_KEYS)
     print('\nCiphertext: ', ' '.join([hex(c).upper() for c in ciphertext]))
     deciphertext = cipher(ciphertext, ROUND_KEYS, 1)
-    print('\nReproduced plaintext: ', ' '.join([hex(d).upper() for d in deciphertext]))
+    hex_deciphertext = [hex(d).upper() for d in deciphertext]
+    print('\nReproduced plaintext: ', 
+    ' '.join(['0X' + '0'*(s//4 - len(d) + 2) + d[2:] for d in hex_deciphertext]))
+
 
 
 
